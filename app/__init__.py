@@ -6,7 +6,8 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = 'QWERTYUIOP'
 app.config['SESSION_TYPE'] = 'filesystem'
 
-app.config['MONGO_URI'] = 'mongodb://localhost:27017/project_management_db'
+app.config['MONGO_URI'] = 'mongodb+srv://pms:pms@pmscluster.o8rtyu8.mongodb.net/?retryWrites=true&w=majority&appName=PMSCluster'
+
 client = MongoClient(app.config['MONGO_URI'])
 db = client.project_management_db
 
