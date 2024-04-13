@@ -1,6 +1,6 @@
 from app import app, db
 from flask import render_template, request, session, redirect, url_for, flash, get_flashed_messages
-from app.models import User
+from app.models import Project, User, Feedback
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -170,5 +170,159 @@ def contact():
             return render_template('contact.html', user_data=user_data, messages=messages)
 
     # If user is not logged in, redirect to login page
+    if request.method == 'POST':
+        fullname = request.form['fullname']
+        email = request.form['email']
+        phonenumber = request.form['phonenumber']
+        subject = request.form['subject']
+        message = request.form['message']
+        
+        # If no validation errors, proceed with user registration
+        feedback = Feedback(fullname=fullname, email=email, phonenumber=phonenumber, subject=subject, message=message)
+        feedback.save()
+
+        success_message = 'Feedback sent successfully'
+        return render_template('contact.html', success_message=success_message)
+            
     return render_template('contact.html')
+
+
+
+@app.route('/adminLogin', methods=['GET', 'POST'])
+def adminLogin():
+    if 'admin-email' in session:
+        # User is already logged in, redirect to another page (e.g., index)
+        flash('You are already logged in.', 'info')
+        return redirect(url_for('adminDashboard'))
+    
+    
+    if request.method == 'POST':
+        email = request.form['email']
+        password = request.form['password']
+
+
+        if not email or not password:
+            error_message = 'Missing email or password'
+            return render_template('login.html', error_message=error_message)
+
+        user = User.find_by_email(email)
+        print(f"User details - Username: {user.username}, Email: {user.email}, UserType: {user.usertype}")
+
+        
+        if user.usertype != "Admin":
+            print(f"No Admin found for email: {email}")
+            error_message = 'Invalid email or password'
+            return render_template('adminLogin.html', error_message=error_message)
+        
+        session['admin-email'] = email # Store email in session for authentication
+
+
+        # Flash a success message
+        flash('Logged in successfully!', 'success')
+
+        # Redirect to index page after successful login
+        return redirect(url_for('adminDashboard'))
+    
+    return render_template('adminLogin.html')
+
+
+
+@app.route('/adminDashboard', methods=['GET', 'POST'])
+def adminDashboard():
+    # Check if user is logged in (email exists in session)
+    if 'admin-email' in session:
+        email = session['admin-email']
+        user = User.find_by_email(email)
+        if user:
+            # Store user data in local storage for client-side access
+            user_data = {  
+                'email': user.email,
+                'username': user.username
+            }
+            
+            
+            feedbacks = list(Feedback.find_all_feedback())
+            users = list(User.find_all_users())
+            numberofuser = User.userCount()
+            numberoffeedback = Feedback.feedbackCount()
+            
+            
+            # Get flashed messages and render index template with user data and messages
+            messages = [msg for msg in get_flashed_messages()]
+            return render_template('adminDashboard.html', user_data=user_data, users=users, numberofuser=numberofuser, numberoffeedback=numberoffeedback, feedbacks= feedbacks, messages=messages)
+
+    # If user is not logged in, redirect to login page
+    return redirect(url_for('login'))
+
+
+
+
+@app.route('/adminLogout', methods=['POST'])
+def adminLogout():
+    # Clear session data
+    session.pop('admin-email', None)
+
+    # Flash a logout message
+
+    flash('Logged out successfully!', 'success')
+    response = redirect(url_for('adminLogin'))
+    
+    response.delete_cookie('session')
+    response.delete_cookie('admin-email')
+    
+    # Redirect to the login page
+    return response
+
+
+@app.route('/deleteUser', methods=['POST'])
+def deleteUser():
+    
+    user_id = request.form.get('user_id')
+    
+    deleted_count = User.delete_by_id(user_id)  # Delete user by ID
+    if deleted_count == 0:
+        error_message = 'User not found'
+        return render_template('adminDashboard.html', error_message=error_message)
+    
+    flash('User deleted successfully!', 'success')
+    response = redirect(url_for('adminDashboard'))
+    return response
+
+
+@app.route('/deleteFeedback', methods=['POST'])
+def deleteFeedback():
+    
+    feedback_id = request.form.get('feedback_id')
+    
+    deleted_count = Feedback.delete_by_id(feedback_id)  # Delete user by ID
+    if deleted_count == 0:
+        error_message = 'Feedback not found'
+        return render_template('adminDashboard.html', error_message=error_message)
+    
+    flash('Feedback deleted successfully!', 'success')
+    response = redirect(url_for('adminDashboard'))
+    return response
+
+
+
+@app.route('/createProject', methods=['POST'])
+def createProject():
+    # Extract project details from request
+    
+    email = session.get('email')
+    print(email)
+    
+    user_id = User.find_user_id(email)
+    project_title = request.form['project_title']
+    project_description = request.form['project_description']
+    
+    # Create a new Project object
+    project = Project(user_id=user_id, project_title=project_title, project_description=project_description)
+    # Save the project to the database
+    project.save()
+    
+    flash('Project created successfully'
+, 'success')
+    response = redirect(url_for('dashboard'))
+    return response
 
