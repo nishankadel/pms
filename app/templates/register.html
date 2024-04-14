@@ -225,5 +225,21 @@
         </div>
       </div>
     </div>
+    <script>
+      // JavaScript to handle click event on close icon
+      document.addEventListener("DOMContentLoaded", function () {
+        // Find the close icon element
+        const closeIcon = document.querySelector(".close-icon");
+
+        // Add click event listener to the close icon
+        closeIcon.addEventListener("click", function () {
+          // Find the parent container to hide (error message container)
+          const errorContainer = closeIcon.closest(".flex");
+
+          // Hide the error container by setting display to 'none'
+          errorContainer.style.display = "none";
+        });
+      });
+    </script>
   </body>
 </html>
