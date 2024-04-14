@@ -114,9 +114,15 @@ class Project:
     @staticmethod
     def find_by_user(user_id):
         # Find projects belonging to a specific user by user_id
-        projects_data = db.projects.find({'user_id': user_id})
-        projects = [Project.from_dict(proj) for proj in projects_data]
+        projects = db.projects.find({'user_id': user_id})
         return projects
+    
+    @staticmethod
+    def find_one_project(project_id):
+        # Find projects belonging to a specific user by user_id
+        projects = db.projects.find_one({'_id': project_id})
+        return projects
+    
 
     def to_dict(self):
         return {
@@ -135,5 +141,4 @@ class Project:
             project_description=data['projectDescription'],
             project_task=data.get('projectTask', []),
             collaborator=data.get('collaborator', []),
-            created_at=data.get('createdAt')
         )

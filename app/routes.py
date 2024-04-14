@@ -103,9 +103,20 @@ def dashboard():
                 'email': user.email,
                 'username': user.username
             }
+            
+            email = session.get('email')
+            
+    
+            user_id = User.find_user_id(email)
+            projects = Project.find_by_user(user_id)
+            
+            
+            allprojects = [Project.from_dict(proj) for proj in projects]
+
+
             # Get flashed messages and render index template with user data and messages
             messages = [msg for msg in get_flashed_messages()]
-            return render_template('dashboard.html', user_data=user_data, messages=messages)
+            return render_template('dashboard.html', user_data=user_data, messages=messages, projects=allprojects)
 
     # If user is not logged in, redirect to login page
     return redirect(url_for('login'))
@@ -304,7 +315,6 @@ def deleteFeedback():
     return response
 
 
-
 @app.route('/createProject', methods=['POST'])
 def createProject():
     # Extract project details from request
@@ -326,3 +336,24 @@ def createProject():
     response = redirect(url_for('dashboard'))
     return response
 
+
+@app.route('/singleProject/<project_id>', methods=['GET', 'POST'])
+def singleProject(project_id):
+    # Check if user is logged in (email exists in session)
+    if 'email' in session:
+        email = session['email']
+        user = User.find_by_email(email)
+        if user:
+            # Store user data in local storage for client-side access
+            user_data = {
+                'email': user.email,
+                'username': user.username
+            }
+
+            project = Project.find_one_project(project_id)
+            # Get flashed messages and render index template with user data and messages
+            messages = [msg for msg in get_flashed_messages()]
+            return render_template('singleProject.html', project=project,  user_data=user_data, messages=messages)
+
+    # If user is not logged in, redirect to login page
+    return redirect(url_for('login'))
