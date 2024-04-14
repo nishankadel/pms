@@ -26,11 +26,11 @@ class User:
     def find_all_users():
         return db.users.find({'usertype': "User"})
     
-    @staticmethod
-    def userCount():
-        users = db.users.find({})
-        userCount = users.count()
-        return userCount
+    # @staticmethod
+    # def userCount():
+    #     users = db.users.find({})
+    #     userCount = users.count()
+    #     return userCount
     
     @staticmethod
     def find_by_id(user_id):
@@ -86,11 +86,11 @@ class Feedback:
     def find_all_feedback():
         return db.feedbacks.find({})
 
-    @staticmethod
-    def feedbackCount():
-        feedbacks = db.feedbacks.find({})
-        feedbackCount = feedbacks.count()
-        return feedbackCount
+    # @staticmethod
+    # def feedbackCount():
+    #     feedbacks = db.feedbacks.find({})
+    #     feedbackCount = feedbacks.count()
+    #     return feedbackCount
     
     
     @staticmethod

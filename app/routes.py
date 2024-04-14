@@ -249,8 +249,8 @@ def adminDashboard():
             
             feedbacks = list(Feedback.find_all_feedback())
             users = list(User.find_all_users())
-            numberofuser = User.userCount()
-            numberoffeedback = Feedback.feedbackCount()
+            numberofuser = len(users)
+            numberoffeedback = len(feedbacks)
             
             
             # Get flashed messages and render index template with user data and messages
