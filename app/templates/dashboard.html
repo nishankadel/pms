@@ -225,8 +225,8 @@
         <input
           hidden
           type="text"
-          name="user_id"
-          id="user_id"
+          name="userid"
+          id="userid"
           value="{{ user_data._id }}"
         />
         {% endif %}
@@ -238,9 +238,9 @@
             <input
               class="text-sm sm:text-base placeholder-gray-500 pl-10 pr-4 rounded-lg border border-gray-400 w-full py-2 focus:outline-none focus:border-indigo-400"
               type="text"
-              name="project_title"
-              id="project_title"
-              placeholder="project_title"
+              name="projecttitle"
+              id="projecttitle"
+              placeholder="Project Title"
             />
           </div>
           <div class="p-4">
@@ -248,9 +248,9 @@
             <input
               class="text-sm sm:text-base placeholder-gray-500 pl-10 pr-4 rounded-lg border border-gray-400 w-full py-2 focus:outline-none focus:border-indigo-400"
               type="text"
-              name="project_description"
-              id="project_description"
-              placeholder="project_description"
+              name="projectdescription"
+              id="projectdescription"
+              placeholder="Project Description"
             />
           </div>
           <div class="p-4">
@@ -295,22 +295,31 @@
               <td
                 class="w-full lg:w-auto p-3 text-gray-800 text-center border border-b block lg:table-cell relative lg:static"
               >
-                {{project.project_title}}
+                {{project.projecttitle}}
               </td>
               <td
                 class="w-full lg:w-auto p-3 text-gray-800 text-center border border-b text-center block lg:table-cell relative lg:static"
               >
-                {{project.project_description}}
+                {{project.projectdescription}}
               </td>
               <td
                 class="w-full lg:w-auto p-3 text-gray-800 text-center border border-b text-center block lg:table-cell relative lg:static"
               >
                 <a
-                  href="/singeProject/{{ project._id }}"
+                  href="/singleProject/{{ project['_id'] }}"
                   class="underline text-blue-400 hover:text-blue-600 underline pl-6"
                 >
                   View
                 </a>
+                <form action="/deleteProject" method="post">
+                  <input type="hidden" name="projectid" id="projectid" value="{{ project._id }}">
+                  <button
+                    type="submit"
+                    class="underline text-blue-400 hover:text-blue-600 underline pl-6"
+                  >
+                    Remove
+                  </button>
+                </form>
               </td>
             </tr>
             {% endfor %}
@@ -318,5 +327,14 @@
         </table>
       </div>
     </main>
+    <script>
+      function redirectToSingleProject(projectId) {
+        console.log("Clicked project ID:", projectId);
+
+        // Construct the URL with the project ID and redirect
+        const redirectUrl = `/singleProject/${projectId}`;
+        window.location.href = redirectUrl;
+      }
+    </script>
   </body>
 </html>

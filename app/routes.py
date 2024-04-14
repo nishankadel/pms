@@ -105,18 +105,13 @@ def dashboard():
             }
             
             email = session.get('email')
-            
     
             user_id = User.find_user_id(email)
             projects = Project.find_by_user(user_id)
             
-            
-            allprojects = [Project.from_dict(proj) for proj in projects]
-
-
             # Get flashed messages and render index template with user data and messages
             messages = [msg for msg in get_flashed_messages()]
-            return render_template('dashboard.html', user_data=user_data, messages=messages, projects=allprojects)
+            return render_template('dashboard.html', user_data=user_data, messages=messages, projects=projects)
 
     # If user is not logged in, redirect to login page
     return redirect(url_for('login'))
@@ -322,12 +317,12 @@ def createProject():
     email = session.get('email')
     print(email)
     
-    user_id = User.find_user_id(email)
-    project_title = request.form['project_title']
-    project_description = request.form['project_description']
+    userid = User.find_user_id(email)
+    projecttitle = request.form['projecttitle']
+    projectdescription = request.form['projectdescription']
     
     # Create a new Project object
-    project = Project(user_id=user_id, project_title=project_title, project_description=project_description)
+    project = Project(userid=userid, projecttitle=projecttitle, projectdescription=projectdescription)
     # Save the project to the database
     project.save()
     
@@ -337,7 +332,7 @@ def createProject():
     return response
 
 
-@app.route('/singleProject/<project_id>', methods=['GET', 'POST'])
+@app.route('/singleProject/<project_id>', methods=['GET'])
 def singleProject(project_id):
     # Check if user is logged in (email exists in session)
     if 'email' in session:
@@ -349,11 +344,48 @@ def singleProject(project_id):
                 'email': user.email,
                 'username': user.username
             }
-
-            project = Project.find_one_project(project_id)
+    
+            project = Project.find_project_by_id(project_id)
             # Get flashed messages and render index template with user data and messages
             messages = [msg for msg in get_flashed_messages()]
             return render_template('singleProject.html', project=project,  user_data=user_data, messages=messages)
 
     # If user is not logged in, redirect to login page
     return redirect(url_for('login'))
+
+
+
+
+@app.route('/addTodoTask', methods=['POST'])
+def addTodoTask():
+    # Extract project details from request
+    
+    projectid = request.form['projectid']
+    tasktitle = request.form['tasktitle']
+    taskstatus = request.form['taskstatus']
+    
+    
+    # Create a new Project object
+    project = Project(projectid=projectid, tasktitle=tasktitle, taskstatus=taskstatus)
+    # Save the project to the database
+    project.save()
+    
+    flash('Project created successfully'
+, 'success')
+    response = redirect(url_for('dashboard'))
+    return response
+
+
+@app.route('/deleteProject', methods=['POST'])
+def deleteProject():
+    
+    projectid = request.form.get('projectid')
+    
+    deleted_count = Project.delete_project_by_id(projectid)  # Delete user by ID
+    if deleted_count == 0:
+        error_message = 'Feedback not found'
+        return render_template('dashboard.html', error_message=error_message)
+    
+    flash('Project deleted successfully!', 'success')
+    response = redirect(url_for('dashboard'))
+    return response

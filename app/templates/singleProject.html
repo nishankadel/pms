@@ -6,6 +6,69 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      /* Custom CSS for Kanban Board */
+
+      .kanban-column {
+        min-width: 300px;
+        max-width: 400px;
+        background-color: #f4f5f7;
+        border-radius: 0.5rem;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        padding: 1.5rem;
+        margin-right: 1rem;
+        justify-self: start;
+        /* Align column to the left */
+      }
+
+      .kanban-column:last-child {
+        margin-right: 0;
+      }
+
+      .kanban-column h2 {
+        color: #4a5568;
+        margin-bottom: 1rem;
+        font-size: 1.2rem;
+      }
+
+      .kanban-cards {
+        min-height: 100px;
+      }
+
+      .card {
+        margin-bottom: 10px;
+        padding: 10px;
+        background-color: #fff;
+        border-radius: 0.5rem;
+        box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        transition: box-shadow 0.3s ease-in-out;
+        cursor: pointer;
+      }
+
+      .card:hover {
+        box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.1);
+      }
+
+      .add-card {
+        cursor: pointer;
+        display: inline-block;
+        padding: 0.5rem 1rem;
+        border-radius: 0.375rem;
+        background-color: #4b7bec;
+        color: #fff;
+        transition: background-color 0.3s;
+      }
+
+      .add-card:hover {
+        background-color: #3867d6;
+      }
+
+      .ui-sortable-helper {
+        background-color: #e2e8f0;
+        border: 2px dashed #4a5568;
+        border-radius: 0.5rem;
+      }
+    </style>
     <title>Dashboard | Task Hub</title>
   </head>
   <body>
@@ -220,16 +283,112 @@
         </div>
       </header>
 
-      Single project
-      <h1>Project Details</h1>
-      <p><strong>Title:</strong> {{ project.projectTitle }}</p>
-      <p><strong>Description:</strong> {{ project.projectDescription }}</p>
-      <h2>Project Tasks</h2>
-      <ul>
-        {% for task in project.projectTask %}
-        <li>{{ task.taskName }} - Status: {{ task.taskStatus }}</li>
-        {% endfor %}
-      </ul>
+      <h1 class="text-3xl">Project</h1>
+      <!-- component -->
+      <div
+        class="flex flex-col justify-center relative overflow-hidden pt-5 pb-5"
+      >
+        <div class="max-w-7xl mx-auto">
+          <div class="relative group">
+            <div
+              class="absolute -inset-1 bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg blur opacity-25 group-hover:opacity-100 transition duration-1000 group-hover:duration-200"
+            ></div>
+            <div
+              class="relative px-7 py-6 bg-white ring-1 ring-gray-900/5 rounded-lg leading-none flex items-top justify-start space-x-6"
+            >
+              {% if project %}
+              <div class="space-y-2">
+                <p class="text-slate-800">
+                  Project Title: {{project.projecttitle}}
+                </p>
+                <p class="text-slate-800">
+                  Project Description: {{project.projectdescription}}
+                </p>
+
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <h1 class="text-3xl">Project Task</h1>
+
+      <!-- Kanban board section -->
+      <div class="container mx-auto py-12 px-6 sm:px-12">
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
+          <div class="kanban-column">
+            <h2 class="text-lg font-bold">To Do</h2>
+            <div class="kanban-cards">
+              <div class="card">Task 1</div>
+              <div class="card">Task 2</div>
+            </div>
+            <form action="/addTodoTask" method="post">
+              <button type="submit" class="add-card mt-4">Add Card</button>
+            </form>
+          </div>
+
+          <div class="kanban-column">
+            <h2 class="text-lg font-bold">In Progress</h2>
+            <div class="kanban-cards"></div>
+            <form action="/addProgressTask" method="post">
+              <button type="submit" class="add-card mt-4">Add Card</button>
+            </form>
+          </div>
+
+          <div class="kanban-column">
+            <h2 class="text-lg font-bold">Done</h2>
+            <div class="kanban-cards"></div>
+            <form action="/addCompletedTask" method="post">
+              <button type="submit" class="add-card mt-4">Add Card</button>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+      <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+      <script>
+        $(document).ready(function () {
+          $(".kanban-cards")
+            .sortable({
+              connectWith: ".kanban-cards",
+              placeholder: "placeholder",
+              revert: 200,
+              start: function (e, ui) {
+                ui.placeholder.height(ui.item.outerHeight());
+              },
+              receive: function (event, ui) {
+                ui.item.css("transform", "none");
+              },
+            })
+            .disableSelection();
+
+          $(".add-card").click(function () {
+            var content = prompt("Enter task content:");
+            if (content) {
+              var card = $('<div class="card">' + content + "</div>");
+              var column = $(this).closest(".kanban-column");
+              column.find(".kanban-cards").append(card);
+
+              // AJAX request to add task to the backend
+              $.ajax({
+                url: column.find("form").attr("action"), // Get form action URL
+                method: "POST",
+                data: { projectid: projectid }, // Send task content as data
+                success: function (response) {
+                  // Handle success response (if needed)
+                  console.log("Task added successfully!");
+                },
+                error: function (error) {
+                  // Handle error response (if needed)
+                  console.error("Error adding task:", error);
+                },
+              });
+            }
+          });
+        });
+      </script>
     </main>
   </body>
 </html>

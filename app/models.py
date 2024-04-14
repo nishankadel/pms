@@ -100,45 +100,78 @@ class Feedback:
 
     
 class Project:
-    def __init__(self, user_id, project_title, project_description, project_task=None, collaborator=None):
-        self.user_id = user_id
-        self.project_title = project_title
-        self.project_description = project_description
-        self.project_task = project_task or []
-        self.collaborator = collaborator or []
+    def __init__(self, userid, projecttitle, projectdescription):
+        self.userid = userid
+        self.projecttitle = projecttitle
+        self.projectdescription = projectdescription
+        
 
     def save(self):
         # Insert the project into the 'projects' collection
-        db.projects.insert_one(self.to_dict())
-
+        db.projects.insert_one({
+            'userid': self.userid,
+            'projecttitle': self.projecttitle,
+            'projectdescription': self.projectdescription,
+            })
+        
     @staticmethod
-    def find_by_user(user_id):
-        # Find projects belonging to a specific user by user_id
-        projects = db.projects.find({'user_id': user_id})
-        return projects
+    def find_by_user(userid):
+        # Retrieve all projects for a specific user
+        projects = db.projects.find({'userid': userid})
+        return list(projects)
     
     @staticmethod
-    def find_one_project(project_id):
-        # Find projects belonging to a specific user by user_id
-        projects = db.projects.find_one({'_id': project_id})
-        return projects
+    def find_project_by_id(project_id):
+        # Retrieve a single project by its project ID
+        try:
+            project = db.projects.find_one({'_id': ObjectId(project_id)})
+            if project:
+                project['_id'] = str(project['_id'])  # Convert ObjectId to string
+                return project
+            else:
+                return None  # Project not found
+        except Exception as e:
+            print(f"Error finding project by ID: {e}")
+            return None  # Handle any exceptions gracefully
+    
+    @staticmethod
+    def delete_project_by_id(project_id):
+        # Delete a project by its project ID
+        try:
+            result = db.projects.delete_one({'_id': ObjectId(project_id)})
+            if result.deleted_count > 0:
+                return True  # Project deleted successfully
+            else:
+                return False  # Project not found or not deleted
+        except Exception as e:
+            print(f"Error deleting project by ID: {e}")
+            return False  # Handle any exceptions gracefully
+    
     
 
-    def to_dict(self):
-        return {
-            'user_id':self.user_id,
-            'collaborator': [{'userId': c['userId']} for c in self.collaborator],
-            'projectTitle': self.project_title,
-            'projectDescription': self.project_description,
-            'projectTask': [{'taskName': t['taskName'], 'taskStatus': t['taskStatus']} for t in self.project_task],
-        }
+class Task:
+    def __init__(self, projectid, tasktitle, taskstatus):
+        self.projectid = projectid
+        self.tasktitle = tasktitle
+        self.taskstatus = taskstatus
+        
 
+    def save(self):
+        # Insert the project into the 'projects' collection
+        db.tasks.insert_one({
+            'projectid': self.projectid,
+            'tasktitle': self.tasktitle,
+            'taskstatus': self.taskstatus,
+            })
+   
     @staticmethod
-    def from_dict(data):
-        return Project(
-            user_id=data['user_id'],
-            project_title=data['projectTitle'],
-            project_description=data['projectDescription'],
-            project_task=data.get('projectTask', []),
-            collaborator=data.get('collaborator', []),
-        )
+    def find_task_by_projectid(projectid):
+        # Retrieve all tasks for a specific project ID
+        tasks = db.tasks.find({'projectid': projectid})
+        tasks_list = []
+        for task in tasks:
+            task['_id'] = str(task['_id'])  # Convert ObjectId to string
+            tasks_list.append(task)
+        return tasks_list
+    
+       
