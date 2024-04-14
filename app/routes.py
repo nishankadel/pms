@@ -390,3 +390,9 @@ def deleteProject():
     flash('Project deleted successfully!', 'success')
     response = redirect(url_for('dashboard'))
     return response
+
+
+
+@app.errorhandler(404)
+def page_not_found(e):
+    return render_template('404.html'), 404
