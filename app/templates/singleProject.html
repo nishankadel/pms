@@ -304,7 +304,7 @@
                 <p class="text-slate-800">
                   Project Description: {{project.projectdescription}}
                 </p>
-
+                <div id="myElement" data-user-id="{{project._id}}"></div>
                 {% endif %}
               </div>
             </div>
@@ -319,33 +319,29 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
           <div class="kanban-column">
             <h2 class="text-lg font-bold">To Do</h2>
-            <div class="kanban-cards">
-              <div class="card">Task 1</div>
-              <div class="card">Task 2</div>
-            </div>
-            <form action="/addTodoTask" method="post">
-              <button type="submit" class="add-card mt-4">Add Card</button>
-            </form>
+            <div class="kanban-cards"></div>
+            <!-- <form action="/addTodoTask" method="post"> -->
+            <button type="submit" class="add-card mt-4">Add Card</button>
+            <!-- </form> -->
           </div>
 
           <div class="kanban-column">
             <h2 class="text-lg font-bold">In Progress</h2>
             <div class="kanban-cards"></div>
-            <form action="/addProgressTask" method="post">
-              <button type="submit" class="add-card mt-4">Add Card</button>
-            </form>
+            <!-- <form action="/addProgressTask" method="post"> -->
+            <button type="submit" class="add-card mt-4">Add Card</button>
+            <!-- </form> -->
           </div>
 
           <div class="kanban-column">
             <h2 class="text-lg font-bold">Done</h2>
             <div class="kanban-cards"></div>
-            <form action="/addCompletedTask" method="post">
-              <button type="submit" class="add-card mt-4">Add Card</button>
-            </form>
+            <!-- <form action="/addCompletedTask" method="post"> -->
+            <button type="submit" class="add-card mt-4">Add Card</button>
+            <!-- </form> -->
           </div>
         </div>
       </div>
-
       <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
       <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
       <script>
@@ -368,17 +364,65 @@
             var content = prompt("Enter task content:");
             if (content) {
               var card = $('<div class="card">' + content + "</div>");
+              $(this)
+                .closest(".kanban-column")
+                .find(".kanban-cards")
+                .append(card);
+            }
+          });
+        });
+      </script>
+      <!-- <script>
+        $(document).ready(function () {
+          $(".kanban-cards")
+            .sortable({
+              connectWith: ".kanban-cards",
+              placeholder: "placeholder",
+              revert: 200,
+              start: function (e, ui) {
+                ui.placeholder.height(ui.item.outerHeight());
+              },
+              receive: function (event, ui) {
+                ui.item.css("transform", "none");
+              },
+            })
+            .disableSelection();
+
+          $(".add-card").click(function () {
+            var content = prompt("Enter task content:");
+            if (content) {
+              var card = $('<div class="card">' + content + "</div>");
               var column = $(this).closest(".kanban-column");
               column.find(".kanban-cards").append(card);
 
+              // Get project ID (replace 'project_id_here' with actual project ID)
+              // Example: obtain project ID from context
+
+              // Task status (adjust as needed based on your task management system)
+              var taskStatus = "todo"; // Example: set task status (e.g., 'todo', 'inprogress', 'done')
+
+              // Accessing data attributes
+              var element = document.getElementById("myElement");
+              var projectId = element.dataset.userId;
+
+              console.log(projectId);
+              console.log(taskStatus);
+              console.log(content);
+
               // AJAX request to add task to the backend
               $.ajax({
-                url: column.find("form").attr("action"), // Get form action URL
+                url: "/addTask",
                 method: "POST",
-                data: { projectid: projectid }, // Send task content as data
+                contentType: "application/json", // Specify content type as JSON
+
+                data: JSON.stringify({
+                  projectid: projectId,
+                  tasktitle: content,
+                  taskstatus: taskStatus,
+                }),
                 success: function (response) {
                   // Handle success response (if needed)
-                  console.log("Task added successfully!");
+                  console.log("Task added successfully:", response);
                 },
                 error: function (error) {
                   // Handle error response (if needed)
@@ -388,7 +432,7 @@
             }
           });
         });
-      </script>
+      </script> -->
     </main>
   </body>
 </html>

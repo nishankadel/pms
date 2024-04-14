@@ -1,6 +1,6 @@
 from app import app, db
 from flask import render_template, request, session, redirect, url_for, flash, get_flashed_messages
-from app.models import Project, User, Feedback
+from app.models import Project, User, Feedback, Task
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -358,22 +358,23 @@ def singleProject(project_id):
 
 @app.route('/addTodoTask', methods=['POST'])
 def addTodoTask():
-    # Extract project details from request
+    if request.method == 'POST':
+        request_data = request.get_json()
+
+        projectid = request_data.get('projectid')  # Retrieve project ID from AJAX request
+        tasktitle = request_data.get('tasktitle')  # Retrieve task title from AJAX request
+        taskstatus = request_data.get('taskstatus')  # Retrieve task status from AJAX request
     
-    projectid = request.form['projectid']
-    tasktitle = request.form['tasktitle']
-    taskstatus = request.form['taskstatus']
+        print(projectid, tasktitle)
     
+        # Create a new Project object
+        task = Task(projectid=projectid, tasktitle=tasktitle, taskstatus=taskstatus)
+        # Save the project to the database
+        task.save()
     
-    # Create a new Project object
-    project = Project(projectid=projectid, tasktitle=tasktitle, taskstatus=taskstatus)
-    # Save the project to the database
-    project.save()
-    
-    flash('Project created successfully'
-, 'success')
-    response = redirect(url_for('dashboard'))
-    return response
+        flash('Task added successfully', 'success')
+        response = redirect(url_for('dashboard'))
+        return response
 
 
 @app.route('/deleteProject', methods=['POST'])
